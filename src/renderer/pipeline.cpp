@@ -1332,6 +1332,18 @@ struct PipelineImpl : public Pipeline
 	}
 
 
+	float getRenderParamFloat(int param_index)
+	{
+		return m_scene->getRenderParamFloat(param_index);
+	}
+
+
+	int addRenderParamFloat(const char* name)
+	{
+		return m_scene->addRenderParamFloat(name);
+	}
+
+
 	void setDirectionalLightUniforms(ComponentIndex light_cmp) const
 	{
 		if (light_cmp < 0) return;
@@ -1673,7 +1685,7 @@ struct PipelineImpl : public Pipeline
 	void setPoseUniform(const RenderableMesh& renderable_mesh) const
 	{
 		Matrix bone_mtx[128];
-		
+
 		Renderable* renderable = m_scene->getRenderable(renderable_mesh.renderable);
 		const Pose& pose = *renderable->pose;
 		const Model& model = *renderable->model;
@@ -2110,6 +2122,14 @@ struct PipelineImpl : public Pipeline
 	}
 
 
+	int createUniformVec4(const char* name)
+	{
+		bgfx::UniformHandle handle = bgfx::createUniform(name, bgfx::UniformType::Vec4);
+		m_uniforms.push(handle);
+		return m_uniforms.size() - 1;
+	}
+
+
 	int createVec4ArrayUniform(const char* name, int num)
 	{
 		bgfx::UniformHandle handle = bgfx::createUniform(name, bgfx::UniformType::Vec4, num);
@@ -2163,7 +2183,25 @@ struct PipelineImpl : public Pipeline
 
 
 	bool isReady() const override { return m_is_ready; }
-	void setScene(RenderScene* scene) override { m_scene = scene; }
+	void setScene(RenderScene* scene) override 
+	{
+		m_scene = scene;
+		if (!m_lua_state || !m_scene) return;
+		if (lua_getglobal(m_lua_state, "initScene") == LUA_TFUNCTION)
+		{
+			lua_pushlightuserdata(m_lua_state, this);
+			if (lua_pcall(m_lua_state, 1, 0, 0) != LUA_OK)
+			{
+				g_log_error.log("lua") << lua_tostring(m_lua_state, -1);
+				lua_pop(m_lua_state, 1);
+			}
+		}
+		else
+		{
+			lua_pop(m_lua_state, 1);
+		}
+
+	}
 	void setWireframe(bool wireframe) override { m_is_wireframe = wireframe; }
 
 	
@@ -2343,7 +2381,7 @@ int setUniform(lua_State* L)
 	}
 
 	if (uniform_idx >= pipeline->m_uniforms.size()) luaL_argerror(L, 2, "unknown uniform");
-	
+
 	bgfx::setUniform(pipeline->m_uniforms[uniform_idx], tmp, len);
 	return 0;
 }
@@ -2397,7 +2435,7 @@ void PipelineImpl::registerCFunctions()
 	REGISTER_FUNCTION(beginNewView);
 	REGISTER_FUNCTION(bindFramebufferTexture);
 	REGISTER_FUNCTION(applyCamera);
-	
+
 	REGISTER_FUNCTION(disableBlending);
 	REGISTER_FUNCTION(enableAlphaWrite);
 	REGISTER_FUNCTION(disableAlphaWrite);
@@ -2412,6 +2450,7 @@ void PipelineImpl::registerCFunctions()
 	REGISTER_FUNCTION(executeCustomCommand);
 	REGISTER_FUNCTION(getFPS);
 	REGISTER_FUNCTION(createUniform);
+	REGISTER_FUNCTION(createUniformVec4);
 	REGISTER_FUNCTION(createVec4ArrayUniform);
 	REGISTER_FUNCTION(hasScene);
 	REGISTER_FUNCTION(cameraExists);
@@ -2425,6 +2464,8 @@ void PipelineImpl::registerCFunctions()
 	REGISTER_FUNCTION(clearStencil);
 	REGISTER_FUNCTION(setStencilRMask);
 	REGISTER_FUNCTION(setStencilRef);
+	REGISTER_FUNCTION(addRenderParamFloat);
+	REGISTER_FUNCTION(getRenderParamFloat);
 
 	#undef REGISTER_FUNCTION
 
