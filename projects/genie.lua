@@ -634,6 +634,20 @@ project "navigation"
 	useLua()
 	defaultConfigurations()
 
+project "network"
+	libType()
+
+	files { "../src/network/**.h", "../src/network/**.cpp" }
+	includedirs { "../src", "../src/network" }
+	links { "engine" }
+
+	if build_studio then
+		links { "editor" }
+	end
+
+	useLua()
+	defaultConfigurations()
+
 if build_gui then
 	project "gui"
 		libType()
