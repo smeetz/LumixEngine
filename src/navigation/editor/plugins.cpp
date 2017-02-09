@@ -58,7 +58,7 @@ struct StudioAppPlugin LUMIX_FINAL : public StudioApp::IPlugin
 			if (ImGui::Button("Load"))
 			{
 				char path[MAX_PATH_LENGTH];
-				if (PlatformInterface::getOpenFilename(path, lengthOf(path), "Navmesh\0*.nav\0", nullptr))
+				if (PlatformInterface::getOpenFilename(path, lengthOf(path), "Navmesh (.nav)\0*.nav\0", nullptr))
 				{
 					scene->load(path);
 				}
@@ -69,7 +69,7 @@ struct StudioAppPlugin LUMIX_FINAL : public StudioApp::IPlugin
 				if (ImGui::Button("Save"))
 				{
 					char path[MAX_PATH_LENGTH];
-					if (PlatformInterface::getSaveFilename(path, lengthOf(path), "Navmesh\0*.nav\0", nullptr))
+					if (PlatformInterface::getSaveFilename(path, lengthOf(path), "Navmesh (.nav)\0*.nav\0", "nav"))
 					{
 						scene->save(path);
 					}
