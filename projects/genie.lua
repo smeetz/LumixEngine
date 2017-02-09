@@ -909,7 +909,7 @@ if build_studio then
 				links { "gui" }
 			end
 
-			links { "audio", "animation", "renderer", "lua_script", "navigation", "editor", "engine", "shaderc" }
+			links { "audio", "animation", "renderer", "lua_script", "navigation", "editor", "engine", "shaderc", "network" }
 			linkLib "crnlib"
 			linkLib "assimp"
 			linkLib "cmft"

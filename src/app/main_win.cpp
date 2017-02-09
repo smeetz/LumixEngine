@@ -255,10 +255,13 @@ public:
 		m_engine->getPluginManager().load("lua_script");
 		m_engine->getPluginManager().load("physics");
 		m_engine->getPluginManager().load("gui");
+		m_engine->getPluginManager().load("network");
+
 		#ifdef LUMIXENGINE_PLUGINS
 			const char* plugins[] = { LUMIXENGINE_PLUGINS };
 			for (auto plugin : plugins)
 			{
+				Lumix::g_log_info.log("startup") << "Found plugin " << plugin;
 				m_engine->getPluginManager().load(plugin);
 			}
 		#endif
